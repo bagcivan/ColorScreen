@@ -3,59 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sesle Renk ve Ritim Tespiti</title>
+    <title>Ses Rengi Dönüştürme</title>
 </head>
 <body>
-
-<script>
-    function init() {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(function(stream) {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const analyser = audioContext.createAnalyser();
-                const source = audioContext.createMediaStreamSource(stream);
-                source.connect(analyser);
-                
-                analyser.fftSize = 256;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                
-                let lastAverage = 0;
-
-                function checkVolumeAndBeat() {
-                    analyser.getByteFrequencyData(dataArray);
-                    
-                    let values = 0;
-                    let length = dataArray.length;
-                    for (let i = 0; i < length; i++) {
-                        values += dataArray[i];
-                    }
-
-                    const average = values / length;
-
-                    // Ses şiddetine göre renk ayarlaması
-                    const colorIntensity = Math.min(Math.floor(average * 2.55), 255); // 0-100 arası bir değeri 0-255 arasına dönüştür
-                    document.body.style.backgroundColor = `rgb(${colorIntensity}, 0, 0)`;
-
-                    // Basit bir ritim tespiti
-                    if(average > lastAverage + 10) { // 10 değeri hassasiyeti ayarlamak için kullanılır, ihtiyacınıza göre değiştirilebilir.
-                        document.body.style.backgroundColor = 'blue'; // Ritim tespit edildiğinde renk değişikliği
-                    }
-                    
-                    lastAverage = average;
-
-                    requestAnimationFrame(checkVolumeAndBeat);
-                }
-
-                checkVolumeAndBeat();
-            })
-            .catch(function(err) {
-                console.log("Mikrofon erişimi reddedildi: " + err);
-            });
-    }
-
-    // Sayfa yüklendiğinde işlevselliği başlat
-    window.onload = init;
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
