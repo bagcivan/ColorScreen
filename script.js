@@ -1,16 +1,4 @@
-let wakeLock = null;
-
-document.addEventListener('DOMContentLoaded', async function() {
-    // Ekranın uykuya geçmesini engelleme
-    try {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-            console.log('Wake Lock released:', wakeLock.released);
-        });
-    } catch (err) {
-        console.error('Wake Lock request failed:', err);
-    }
-
+document.addEventListener('DOMContentLoaded', function() {
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
     .then(stream => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -52,12 +40,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     .catch(err => {
         console.error('Mikrofon erişimi reddedildi:', err);
     });
-});
 
-// Ekran Wake Lock'un korunduğundan emin olmak için sayfa kapatıldığında serbest bırakma
-window.addEventListener('beforeunload', () => {
-    if (wakeLock !== null && !wakeLock.released) {
-        wakeLock.release();
-        wakeLock = null;
+    // Wake Lock kodu
+    if ('WakeLock' in window && 'request' in window.WakeLock) {  
+        const controller = new AbortController();
+        const signal = controller.signal;
+        window.WakeLock.request('screen', {signal})
+        .catch((e) => {      
+            if (e.name !== 'AbortError') {
+                console.error(`${e.name}, ${e.message}`);
+            }
+        });
+    } else if ('wakeLock' in navigator && 'request' in navigator.wakeLock) {  
+        navigator.wakeLock.request('screen')
+        .catch(e => {
+            console.error(`${e.name}, ${e.message}`);
+        });
+    } else {  
+        console.error('Wake Lock API not supported.');
     }
 });
